@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blocked Users • Pounce Free</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .font-display { font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif; font-weight: 600; }
+
+        .sidebar { background: linear-gradient(180deg, #0f172a 0%, #020617 100%); }
+
+        .nav-link { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-link.active { background-color: #1e2937; color: white; border-radius: 8px; }
+        .nav-link:hover:not(.active) { background-color: #1e2937; border-radius: 8px; }
+
+        .modern-table { border-collapse: separate; border-spacing: 0; }
+        .modern-table thead th { background-color: #f8fafc; font-weight: 600; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .modern-table tbody tr { transition: background-color 0.1s ease; }
+        .modern-table tbody tr:hover { background-color: #f8fafc; }
+
+        .handle { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-weight: 500; }
+
+        .platform-badge { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 4px; }
+
+        .modal { animation: modalPop 0.2s ease-out forwards; }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .section-header { font-size: 1.75rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.025em; }
+
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
+
+        .empty-state { background: linear-gradient(145deg, #f8fafc, #ffffff); }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 flex-shrink-0 text-white flex flex-col border-r border-slate-800">
+            <div class="px-6 py-6 border-b border-slate-800">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-paw text-white text-3xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-display text-3xl font-semibold tracking-tighter">Pounce</span>
+                        <span class="text-[10px] font-mono tracking-[3px] text-indigo-400 block -mt-1">FREE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-3 py-4 flex-1">
+                <div class="space-y-1 text-sm">
+                    <a href="#" class="nav-link active flex items-center gap-x-3 px-4 py-3 text-white">
+                        <i class="fa-solid fa-ban w-5"></i>
+                        <span>Blocked Users</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 text-xs">
+                <div class="flex items-center gap-x-2 text-slate-400 px-2">
+                    <i class="fa-solid fa-globe text-xs"></i>
+                    <span>100% Free • Local</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0">
+                <div class="flex items-center gap-x-4">
+                    <div>
+                        <span class="text-sm text-slate-500">Config</span>
+                        <span class="mx-2 text-slate-300">/</span>
+                        <span class="font-semibold text-slate-900">Blocked Users</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-x-4">
+                    <div class="flex items-center gap-x-3 bg-slate-100 rounded-3xl pl-2 pr-5 py-1.5">
+                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center text-white text-xs font-bold shadow-sm">FU</div>
+                        <div class="text-sm">
+                            <div class="font-medium text-slate-800">Free User</div>
+                            <div class="text-[10px] text-emerald-600 -mt-0.5">Local mode</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-auto p-8 bg-slate-50">
+                <div class="max-w-[1100px] mx-auto">
+                    <div class="flex items-end justify-between mb-8">
+                        <div>
+                            <h1 class="section-header text-slate-900 tracking-tighter">Blocked Users</h1>
+                            <p class="mt-2 text-slate-600 max-w-md">Users and accounts you’ve excluded from appearing in your Pounce streams and suggestions.</p>
+                        </div>
+                        <div>
+                            <button onclick="showAddModal()" 
+                                    class="inline-flex items-center gap-x-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-all text-white font-semibold px-6 h-11 rounded-3xl shadow-sm text-sm">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Add Blocked User</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div class="stat-card bg-white border border-slate-200 rounded-3xl p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-xs font-medium tracking-wider text-slate-500">TOTAL BLOCKED</div>
+                                    <div id="totalCount" class="text-5xl font-semibold tabular-nums text-slate-900 mt-2">0</div>
+                                </div>
+                                <div class="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center">
+                                    <i class="fa-solid fa-users text-xl text-slate-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-white border border-slate-200 rounded-3xl p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-xs font-medium tracking-wider text-slate-500">ON X (TWITTER)</div>
+                                    <div id="xCount" class="text-5xl font-semibold tabular-nums text-slate-900 mt-2">0</div>
+                                </div>
+                                <div class="w-10 h-10 bg-black rounded-2xl flex items-center justify-center">
+                                    <i class="fa-brands fa-x-twitter text-white text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-white border border-slate-200 rounded-3xl p-5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="text-xs font-medium tracking-wider text-slate-500">ON REDDIT</div>
+                                    <div id="redditCount" class="text-5xl font-semibold tabular-nums text-slate-900 mt-2">0</div>
+                                </div>
+                                <div class="w-10 h-10 bg-orange-500 rounded-2xl flex items-center justify-center">
+                                    <i class="fa-brands fa-reddit-alien text-white text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 items-center justify-between mb-4">
+                        <div class="flex-1 flex items-center gap-3 w-full">
+                            <div class="relative flex-1 max-w-md">
+                                <i class="fa-solid fa-search absolute left-4 top-3.5 text-slate-400"></i>
+                                <input id="searchInput" type="text" placeholder="Search handles or notes..." 
+                                       class="w-full bg-white border border-slate-300 focus:border-indigo-400 pl-11 pr-4 py-3 rounded-3xl text-sm outline-none transition-all"
+                                       onkeyup="filterTable()">
+                            </div>
+                            <div class="relative">
+                                <select id="platformFilter" onchange="filterTable()" 
+                                        class="appearance-none bg-white border border-slate-300 text-sm pl-4 pr-10 py-3 rounded-3xl outline-none cursor-pointer focus:border-indigo-400">
+                                    <option value="">All Platforms</option>
+                                    <option value="X">X (Twitter)</option>
+                                    <option value="Reddit">Reddit</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 text-xs">
+                            <button onclick="exportToJSON()" 
+                                    class="flex items-center gap-x-2 px-4 py-2.5 text-slate-600 hover:text-slate-800 hover:bg-white border border-slate-200 transition-colors rounded-3xl text-xs font-medium">
+                                <i class="fa-solid fa-download"></i>
+                                <span>Export JSON</span>
+                            </button>
+                            <button onclick="document.getElementById('importFile').click()" 
+                                    class="flex items-center gap-x-2 px-4 py-2.5 text-slate-600 hover:text-slate-800 hover:bg-white border border-slate-200 transition-colors rounded-3xl text-xs font-medium">
+                                <i class="fa-solid fa-upload"></i>
+                                <span>Import</span>
+                            </button>
+                            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importFromJSON(event)">
+                            <button onclick="clearAllBlocked()" 
+                                    class="flex items-center gap-x-2 px-4 py-2.5 text-red-600 hover:bg-red-50 border border-red-200 transition-colors rounded-3xl text-xs font-medium">
+                                <i class="fa-solid fa-trash"></i>
+                                <span>Clear All</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden">
+                        <table class="modern-table w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200">
+                                    <th class="text-left px-8 py-4 font-semibold w-2/5">Handle</th>
+                                    <th class="text-left px-6 py-4 font-semibold">Platform</th>
+                                    <th class="text-left px-6 py-4 font-semibold">Added</th>
+                                    <th class="text-left px-6 py-4 font-semibold">Note</th>
+                                    <th class="text-right px-8 py-4 font-semibold w-24">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="blockedTableBody" class="text-slate-700 divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                        
+                        <div id="emptyState" class="hidden px-8 py-14 text-center empty-state">
+                            <div class="mx-auto w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mb-5">
+                                <i class="fa-solid fa-ban text-3xl text-slate-300"></i>
+                            </div>
+                            <h4 class="font-semibold text-lg text-slate-700">No blocked users yet</h4>
+                            <p class="text-slate-500 mt-1 max-w-xs mx-auto text-sm">Add accounts you want to exclude from your monitoring and outreach streams.</p>
+                            <button onclick="showAddModal()" 
+                                    class="mt-5 inline-flex items-center gap-x-2 text-sm font-semibold px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-3xl transition-colors">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                                <span>Add your first blocked user</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 px-1 flex items-center justify-between text-xs text-slate-500">
+                        <div>
+                            Data is stored <span class="font-medium text-emerald-600">locally in your browser</span>. Nothing is sent to any server.
+                        </div>
+                        <div onclick="showInfoModal()" class="cursor-pointer flex items-center gap-x-1 hover:text-slate-700 transition-colors">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <span class="font-medium">How this works</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / Edit Modal -->
+    <div id="modal" onclick="if (event.target.id === 'modal') hideModal()" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+            <div class="px-7 pt-7 pb-5 flex items-center justify-between border-b">
+                <div>
+                    <h3 id="modalTitle" class="font-semibold text-xl tracking-tight">Add Blocked User</h3>
+                    <p id="modalSubtitle" class="text-xs text-slate-500 mt-0.5">This account will be excluded from streams</p>
+                </div>
+                <button onclick="hideModal()" class="text-slate-400 hover:text-slate-600 transition-colors w-9 h-9 flex items-center justify-center text-xl leading-none">×</button>
+            </div>
+            
+            <form id="blockForm" onsubmit="handleFormSubmit(event)" class="p-7 space-y-5">
+                <input type="hidden" id="editIndex" value="">
+                
+                <div>
+                    <label class="block text-xs font-semibold tracking-wider text-slate-600 mb-1.5">HANDLE / USERNAME</label>
+                    <div class="relative">
+                        <input type="text" id="handleInput" required 
+                               class="w-full border border-slate-300 focus:border-indigo-500 transition-colors rounded-2xl px-4 py-3 text-sm placeholder:text-slate-400 outline-none"
+                               placeholder="@username or username">
+                        <div class="absolute right-4 top-3.5 text-xs text-slate-400 pointer-events-none">@ optional</div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1.5 px-1">For X: @elonmusk    •    For Reddit: u/spez or just spez</p>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold tracking-wider text-slate-600 mb-1.5">PLATFORM</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label onclick="selectPlatform('X')" class="platform-option cursor-pointer flex items-center gap-x-3 border border-slate-300 hover:border-indigo-400 transition-all rounded-2xl px-4 py-3 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50" id="platformOptionX">
+                            <input type="radio" name="platform" value="X" id="platformX" checked class="accent-indigo-600">
+                            <div class="flex items-center gap-x-2.5">
+                                <i class="fa-brands fa-x-twitter text-lg"></i>
+                                <div>
+                                    <div class="font-semibold text-sm">X</div>
+                                    <div class="text-[10px] text-slate-500 -mt-0.5">Twitter</div>
+                                </div>
+                            </div>
+                        </label>
+                        
+                        <label onclick="selectPlatform('Reddit')" class="platform-option cursor-pointer flex items-center gap-x-3 border border-slate-300 hover:border-indigo-400 transition-all rounded-2xl px-4 py-3 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50" id="platformOptionReddit">
+                            <input type="radio" name="platform" value="Reddit" id="platformReddit" class="accent-indigo-600">
+                            <div class="flex items-center gap-x-2.5">
+                                <i class="fa-brands fa-reddit-alien text-xl text-orange-500"></i>
+                                <div>
+                                    <div class="font-semibold text-sm">Reddit</div>
+                                    <div class="text-[10px] text-slate-500 -mt-0.5">Subreddits & users</div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold tracking-wider text-slate-600 mb-1.5">NOTE / REASON <span class="font-normal text-slate-400">(optional)</span></label>
+                    <textarea id="noteInput" rows="3" 
+                              class="w-full border border-slate-300 focus:border-indigo-500 transition-colors rounded-2xl px-4 py-3 text-sm resize-y min-h-[82px] placeholder:text-slate-400 outline-none"
+                              placeholder="e.g. Competitor account, spam, irrelevant niche, toxic..."></textarea>
+                </div>
+                
+                <div class="pt-3 flex items-center justify-end gap-x-3">
+                    <button type="button" onclick="hideModal()" 
+                            class="px-6 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors rounded-3xl">Cancel</button>
+                    <button type="submit" 
+                            class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-all text-white font-semibold text-sm rounded-3xl shadow-sm flex items-center gap-x-2">
+                        <span id="submitButtonText">Add to Blocked List</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[60] space-y-2"></div>
+
+    <script>
+        let blockedUsers = [];
+
+        function loadBlockedUsers() {
+            const saved = localStorage.getItem('pounceBlockedUsers');
+            if (saved) {
+                try {
+                    blockedUsers = JSON.parse(saved);
+                } catch (e) {
+                    blockedUsers = [];
+                }
+            } else {
+                blockedUsers = [
+                    {
+                        id: Date.now() - 100000000,
+                        handle: "@spammer_xyz",
+                        platform: "X",
+                        note: "Frequent self-promotion spam",
+                        added: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString()
+                    },
+                    {
+                        id: Date.now() - 80000000,
+                        handle: "u/irrelevant_guy",
+                        platform: "Reddit",
+                        note: "Posts in completely unrelated subreddits",
+                        added: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString()
+                    }
+                ];
+                saveBlockedUsers();
+            }
+            renderTable();
+            updateStats();
+        }
+
+        function saveBlockedUsers() {
+            localStorage.setItem('pounceBlockedUsers', JSON.stringify(blockedUsers));
+        }
+
+        function renderTable(filteredUsers = null) {
+            const tbody = document.getElementById('blockedTableBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+            
+            let usersToShow = filteredUsers || blockedUsers;
+            usersToShow = [...usersToShow].sort((a, b) => new Date(b.added) - new Date(a.added));
+            
+            if (usersToShow.length === 0) {
+                emptyState.classList.remove('hidden');
+                tbody.parentElement.classList.add('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+                tbody.parentElement.classList.remove('hidden');
+            }
+            
+            usersToShow.forEach((user, index) => {
+                const originalIndex = blockedUsers.findIndex(u => u.id === user.id);
+                
+                const row = document.createElement('tr');
+                row.className = 'group';
+                
+                const addedDate = new Date(user.added);
+                const dateStr = addedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const timeStr = addedDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '');
+                
+                const platformHTML = user.platform === 'X' 
+                    ? `<span class="platform-badge bg-black text-white"><i class="fa-brands fa-x-twitter mr-1"></i> X</span>`
+                    : `<span class="platform-badge bg-orange-100 text-orange-700"><i class="fa-brands fa-reddit-alien mr-1"></i> Reddit</span>`;
+                
+                const noteHTML = user.note 
+                    ? `<div class="text-xs text-slate-600 line-clamp-2 max-w-[220px]">${user.note}</div>` 
+                    : `<span class="text-xs text-slate-400 italic">No note added</span>`;
+                
+                row.innerHTML = `
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-x-3">
+                            <div class="w-9 h-9 flex-shrink-0 rounded-2xl ${user.platform === 'X' ? 'bg-black' : 'bg-orange-500'} flex items-center justify-center text-white shadow-inner">
+                                <i class="fa-brands ${user.platform === 'X' ? 'fa-x-twitter' : 'fa-reddit-alien'} text-lg"></i>
+                            </div>
+                            <div>
+                                <div class="handle font-semibold text-base text-slate-900 tracking-tight">${user.handle}</div>
+                                <div class="text-[10px] text-slate-500 font-mono">${user.platform === 'X' ? 'twitter.com/' + user.handle.replace('@','') : 'reddit.com/user/' + user.handle.replace('u/','')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-5">
+                        ${platformHTML}
+                    </td>
+                    <td class="px-6 py-5">
+                        <div>
+                            <div class="font-medium text-sm">${dateStr}</div>
+                            <div class="text-xs text-slate-400">${timeStr}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-5 pr-4">
+                        ${noteHTML}
+                    </td>
+                    <td class="px-8 py-5 text-right">
+                        <div class="flex items-center justify-end gap-x-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editBlockedUser(${originalIndex}); event.stopImmediatePropagation();" 
+                                    class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all rounded-2xl" title="Edit note">
+                                <i class="fa-solid fa-edit text-base"></i>
+                            </button>
+                            <button onclick="deleteBlockedUser(${originalIndex}); event.stopImmediatePropagation();" 
+                                    class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all rounded-2xl" title="Remove from blocked list">
+                                <i class="fa-solid fa-trash text-base"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = blockedUsers.length;
+            const xCount = blockedUsers.filter(u => u.platform === 'X').length;
+            const redditCount = blockedUsers.filter(u => u.platform === 'Reddit').length;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('xCount').textContent = xCount;
+            document.getElementById('redditCount').textContent = redditCount;
+        }
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const platformFilter = document.getElementById('platformFilter').value;
+            
+            let filtered = blockedUsers;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(user => 
+                    user.handle.toLowerCase().includes(searchTerm) || 
+                    (user.note && user.note.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (platformFilter) {
+                filtered = filtered.filter(user => user.platform === platformFilter);
+            }
+            
+            renderTable(filtered);
+        }
+
+        function showAddModal() {
+            const modal = document.getElementById('modal');
+            const form = document.getElementById('blockForm');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            const submitText = document.getElementById('submitButtonText');
+            const editIndexInput = document.getElementById('editIndex');
+            
+            form.reset();
+            editIndexInput.value = '';
+            title.textContent = 'Add Blocked User';
+            subtitle.textContent = 'This account will be excluded from streams';
+            submitText.textContent = 'Add to Blocked List';
+            
+            document.getElementById('platformX').checked = true;
+            updatePlatformOptionsUI();
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                document.getElementById('handleInput').focus();
+            }, 150);
+        }
+
+        function editBlockedUser(index) {
+            const user = blockedUsers[index];
+            if (!user) return;
+            
+            const modal = document.getElementById('modal');
+            const form = document.getElementById('blockForm');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            const submitText = document.getElementById('submitButtonText');
+            const editIndexInput = document.getElementById('editIndex');
+            
+            editIndexInput.value = index;
+            
+            document.getElementById('handleInput').value = user.handle;
+            document.getElementById('noteInput').value = user.note || '';
+            
+            if (user.platform === 'X') {
+                document.getElementById('platformX').checked = true;
+            } else {
+                document.getElementById('platformReddit').checked = true;
+            }
+            updatePlatformOptionsUI();
+            
+            title.textContent = 'Edit Blocked User';
+            subtitle.textContent = 'Update details for this blocked account';
+            submitText.textContent = 'Save Changes';
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function updatePlatformOptionsUI() {
+            const xOption = document.getElementById('platformOptionX');
+            const redditOption = document.getElementById('platformOptionReddit');
+            
+            const xChecked = document.getElementById('platformX').checked;
+            
+            if (xChecked) {
+                xOption.classList.add('!border-indigo-500', '!bg-indigo-50/60');
+                redditOption.classList.remove('!border-indigo-500', '!bg-indigo-50/60');
+            } else {
+                redditOption.classList.add('!border-indigo-500', '!bg-indigo-50/60');
+                xOption.classList.remove('!border-indigo-500', '!bg-indigo-50/60');
+            }
+        }
+
+        function selectPlatform(platform) {
+            if (platform === 'X') {
+                document.getElementById('platformX').checked = true;
+            } else {
+                document.getElementById('platformReddit').checked = true;
+            }
+            updatePlatformOptionsUI();
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const handleInput = document.getElementById('handleInput').value.trim();
+            const noteInput = document.getElementById('noteInput').value.trim();
+            const editIndex = document.getElementById('editIndex').value;
+            const platform = document.querySelector('input[name="platform"]:checked').value;
+            
+            if (!handleInput) {
+                alert('Please enter a handle or username');
+                return;
+            }
+            
+            let normalizedHandle = handleInput;
+            if (platform === 'X' && !normalizedHandle.startsWith('@')) {
+                normalizedHandle = '@' + normalizedHandle;
+            }
+            if (platform === 'Reddit' && !normalizedHandle.toLowerCase().startsWith('u/')) {
+                normalizedHandle = 'u/' + normalizedHandle.replace(/^u\//i, '');
+            }
+            
+            const now = new Date().toISOString();
+            
+            if (editIndex !== '') {
+                const idx = parseInt(editIndex);
+                blockedUsers[idx].handle = normalizedHandle;
+                blockedUsers[idx].platform = platform;
+                blockedUsers[idx].note = noteInput || null;
+                showToast('Blocked user updated successfully');
+            } else {
+                const newUser = {
+                    id: Date.now(),
+                    handle: normalizedHandle,
+                    platform: platform,
+                    note: noteInput || null,
+                    added: now
+                };
+                blockedUsers.unshift(newUser);
+                showToast('User added to blocked list');
+            }
+            
+            saveBlockedUsers();
+            hideModal();
+            renderTable();
+            filterTable();
+        }
+
+        function deleteBlockedUser(index) {
+            if (!confirm('Remove this user from your blocked list?')) {
+                return;
+            }
+            
+            const removed = blockedUsers.splice(index, 1);
+            saveBlockedUsers();
+            renderTable();
+            filterTable();
+            
+            showToast(`Removed ${removed[0].handle} from blocked list`, true);
+        }
+
+        function clearAllBlocked() {
+            if (blockedUsers.length === 0) return;
+            
+            if (!confirm(`Delete ALL ${blockedUsers.length} blocked users? This cannot be undone.`)) {
+                return;
+            }
+            
+            blockedUsers = [];
+            saveBlockedUsers();
+            renderTable();
+            showToast('All blocked users cleared', true);
+        }
+
+        function exportToJSON() {
+            if (blockedUsers.length === 0) {
+                showToast('Nothing to export yet');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(blockedUsers, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `pounce-blocked-users-${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast('Exported blocked list as JSON');
+        }
+
+        function importFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(imported)) {
+                        throw new Error('Invalid format: Expected an array');
+                    }
+                    
+                    const validUsers = imported.filter(item => 
+                        item && typeof item.handle === 'string' && 
+                        (item.platform === 'X' || item.platform === 'Reddit')
+                    );
+                    
+                    if (validUsers.length === 0) {
+                        showToast('No valid blocked users found in file');
+                        return;
+                    }
+                    
+                    const existingKeys = new Set(blockedUsers.map(u => `${u.platform}:${u.handle.toLowerCase()}`));
+                    
+                    let addedCount = 0;
+                    validUsers.forEach(user => {
+                        const key = `${user.platform}:${user.handle.toLowerCase()}`;
+                        if (!existingKeys.has(key)) {
+                            blockedUsers.push({
+                                id: user.id || Date.now() + Math.random(),
+                                handle: user.handle,
+                                platform: user.platform,
+                                note: user.note || null,
+                                added: user.added || new Date().toISOString()
+                            });
+                            existingKeys.add(key);
+                            addedCount++;
+                        }
+                    });
+                    
+                    saveBlockedUsers();
+                    renderTable();
+                    filterTable();
+                    
+                    showToast(`Imported ${addedCount} new blocked user(s)`);
+                    
+                } catch (err) {
+                    showToast('Failed to import: ' + err.message, true);
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toastContainer');
+            
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-x-3 px-5 py-3 rounded-3xl shadow-xl text-sm max-w-xs ${isError ? 'bg-red-600 text-white' : 'bg-slate-900 text-white'}`;
+            
+            toast.innerHTML = `
+                <div class="flex-1">${message}</div>
+                <button class="text-white/70 hover:text-white ml-2" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.transition = 'all 0.25s ease';
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 200);
+                }
+            }, 3800);
+        }
+
+        function showInfoModal() {
+            const modalHTML = `
+                <div onclick="this.remove()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-6">
+                    <div onclick="event.stopImmediatePropagation()" class="bg-white max-w-lg w-full rounded-3xl p-8 shadow-2xl">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-2xl tracking-tight">How this free alternative works</h3>
+                            </div>
+                            <button onclick="event.target.closest('.fixed').remove()" class="text-3xl leading-none text-slate-300 hover:text-slate-400">×</button>
+                        </div>
+                        
+                        <div class="mt-6 space-y-5 text-sm text-slate-600">
+                            <div class="flex gap-4">
+                                <div class="mt-1 text-indigo-500"><i class="fa-solid fa-check-circle"></i></div>
+                                <div><strong>Completely local & private</strong><br>Everything stays in your browser using localStorage. No accounts, no servers, no tracking.</div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="mt-1 text-indigo-500"><i class="fa-solid fa-check-circle"></i></div>
+                                <div><strong>Same-to-same experience</strong><br>Designed to closely replicate the blocked users configuration experience from Pounce.so — clean, fast, and focused.</div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="mt-1 text-indigo-500"><i class="fa-solid fa-check-circle"></i></div>
+                                <div><strong>Export / Import anywhere</strong><br>Take your list with you. Use the JSON export to backup or move between devices/browsers.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 pt-6 border-t text-xs text-center text-slate-400">
+                            Made as a free, open alternative • You can save this HTML file and open it anytime
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function initializeApp() {
+            loadBlockedUsers();
+            
+            document.getElementById('searchInput').addEventListener('input', filterTable);
+            document.getElementById('platformFilter').addEventListener('change', filterTable);
+            
+            setTimeout(() => {
+                const hasSeen = localStorage.getItem('pounceFreeHasSeenWelcome');
+                if (!hasSeen && blockedUsers.length > 0) {
+                    showToast('Welcome! This is a completely free local clone of Pounce blocked users config.');
+                    localStorage.setItem('pounceFreeHasSeenWelcome', 'true');
+                }
+            }, 1200);
+            
+            setTimeout(updatePlatformOptionsUI, 100);
+            
+            console.log('%c[Pounce Free] Blocked Users standalone ready.', 'color:#64748b; font-size:9px');
+        }
+
+        window.onload = initializeApp;
+        
+        window.PounceFree = {
+            exportData: () => blockedUsers,
+            clearData: () => { blockedUsers = []; localStorage.removeItem('pounceBlockedUsers'); location.reload(); }
+        };
+    </script>
+</body>
+</html>
